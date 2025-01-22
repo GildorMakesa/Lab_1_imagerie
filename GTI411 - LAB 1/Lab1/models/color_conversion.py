@@ -34,6 +34,7 @@ def rgb_2_cmyk(r: int, g: int, b: int):
 def cmyk_2_rgb(c: int, m: int, y: int, k: int):
     """
     Convertir une couleur CMYK (0-100) en RGB (0-255).
+    
     """
     c_prime, m_prime, y_prime, k_prime = c / 100, m / 100, y / 100, k / 100
     r = 255 * (1 - c_prime) * (1 - k_prime)
