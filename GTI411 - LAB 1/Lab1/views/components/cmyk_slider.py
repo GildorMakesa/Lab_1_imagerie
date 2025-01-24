@@ -15,8 +15,9 @@ def create_cmyk_palette(height: int, width: int, cmykcolor: list[float]):
     for widx in range(w):
         c, m, y, k = cmykcolor
         factor = widx / w  # Facteur de position sur l'axe des couleurs
-        rgb = color_conversion.cmyk_2_rgb(c * factor * 100, m * factor * 100, y * factor * 100, k * 100)
-        rgb = np.clip(rgb, 0, 255).astype(np.uint8)  # Normaliser les valeurs dans [0, 255]
+        rgb = color_conversion.cmyk_2_rgb(c* factor * 100, m * factor * 100, y * factor * 100, k * 100)
+        print(f"CMYK : C: {c}, M: {m}, Y: {y}, K: {k} → RGB: {rgb}")
+        #rgb = np.clip(rgb, 0, 255).astype(np.uint8)  # Normaliser les valeurs dans [0, 255]
         for hidx in range(h):
             image[hidx, widx] = rgb
     return image
@@ -30,19 +31,20 @@ class CMYKSlider(ColorSlider):
 
         # Cyan channel
         cyan_palette = create_cmyk_palette(self.height, self.width, [1, 0, 0, 0])
-        cyan_layout, self.cyan_slider = create_slider(self.parent, "C", default_value=c, slider_palette=cyan_palette)
-
+        cyan_layout, self.cyan_slider = create_slider(self.parent, "C", minval=0, maxval=100, default_value=c, slider_palette=cyan_palette)
+        
+        
         # Magenta channel
         magenta_palette = create_cmyk_palette(self.height, self.width, [0, 1, 0, 0])
-        magenta_layout, self.magenta_slider = create_slider(self.parent, "M", default_value=m, slider_palette=magenta_palette)
+        magenta_layout, self.magenta_slider = create_slider(self.parent, "M", minval=0, maxval=100, default_value=m, slider_palette=magenta_palette)
 
         # Yellow channel
         yellow_palette = create_cmyk_palette(self.height, self.width, [0, 0, 1, 0])
-        yellow_layout, self.yellow_slider = create_slider(self.parent, "Y", default_value=y, slider_palette=yellow_palette)
+        yellow_layout, self.yellow_slider = create_slider(self.parent, "Y", minval=0, maxval=100,default_value=y, slider_palette=yellow_palette)
 
         # Key (black) channel
         key_palette = create_cmyk_palette(self.height, self.width, [0, 0, 0, 1])
-        key_layout, self.key_slider = create_slider(self.parent, "K", default_value=k, slider_palette=key_palette)
+        key_layout, self.key_slider = create_slider(self.parent, "K", minval=0, maxval=100, default_value=k, slider_palette=key_palette)
 
         # Connecter les sliders au changement de valeur
         self.cyan_slider.valueChanged['int'].connect(self.value_changed)

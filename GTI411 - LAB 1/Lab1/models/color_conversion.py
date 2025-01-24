@@ -22,8 +22,14 @@ def rgb_2_cmyk(r: int, g: int, b: int):
     if r == 0 and g == 0 and b == 0:
         return 0, 0, 0, 100  # Cas spécial : noir pur
 
-    r_prime, g_prime, b_prime = r / 255, g / 255, b / 255
+    #Normalise en 1-0 
+    r_prime = r / 255
+    g_prime = g / 255
+    b_prime = b / 255
+
     k = 1 - max(r_prime, g_prime, b_prime)
+
+
     c = (1 - r_prime - k) / (1 - k) if k < 1 else 0
     m = (1 - g_prime - k) / (1 - k) if k < 1 else 0
     y = (1 - b_prime - k) / (1 - k) if k < 1 else 0
