@@ -12,6 +12,14 @@ def rgb_2_hsv(r, g, b):
 
 
 def hsv_2_rgb(h, s, v):
+    
+    #Normalise en 1-0 
+    r_prime = h / 255
+    g_prime = s / 255
+    b_prime = v / 255
+
+
+
     return ...
 
 
@@ -51,3 +59,30 @@ def cmyk_2_rgb(c: int, m: int, y: int, k: int):
     r, g, b = [max(0, min(255, int(v))) for v in (r, g, b)]
 
     return r, g, b
+
+
+""" 
+A faire: implémenter la conversion HSV, CMYK et Lab vers et depuis RGB
+
+
+def rgb_2_rgb(r, g, b):
+    Cette fonction ne fait rien, elle sert uniquement pour illustrer
+    return r, g, b
+
+
+
+def rgb_2_hsv(r, g, b):
+    return ...
+
+
+def hsv_2_rgb(h, s, v):
+    
+    #Normalise en 1-0 
+    r_prime = h / 255
+    g_prime = s / 255
+    b_prime = v / 255
+
+
+
+    return ...
+"""

@@ -11,7 +11,7 @@ class Lab1ColorConvertModel:
 
     @property
     def rgb(self):
-        return self.curr_r, self.curr_b, self.curr_g
+        return self.curr_r, self.curr_g, self.curr_b
 
     
     def update_color(self, values: list[float], mode:str = "rgb"):
