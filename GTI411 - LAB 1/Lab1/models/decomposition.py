@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import cv2
 
 class Lab1DecompositionModel:
     def __init__(self) -> None:
@@ -25,11 +25,12 @@ class Lab1DecompositionModel:
         plt.imshow(self.image)
         plt.title("Base")
 
-        channels = ["red", "green", "blue"]
+        channels = ["Reds", "Greens", "Blues"]
         for idx, c in enumerate(channels):
             plt.subplot(2, 3, 4+idx)
             plt.title(c)
-            im = plt.imshow(self.image[:, :, idx], cmap="gray")
+
+            im = plt.imshow(self.image[:, :, idx], cmap=c)
             plt.colorbar(im)
 
         plt.tight_layout()
