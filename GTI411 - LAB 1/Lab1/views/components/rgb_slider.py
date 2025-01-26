@@ -10,10 +10,12 @@ from .utils import create_slider
 def create_rgb_palette(height:int, width: int, rgbcolor:list[int]):
     image = np.zeros((height, width, 3), dtype=np.uint8)
     h, w, _ = image.shape
+
     for widx in range(w):
         color = 255*(widx/ w) * np.array(rgbcolor)
         for hidx in range(h):
             image[hidx, widx] = color
+            
     return image
 
 
