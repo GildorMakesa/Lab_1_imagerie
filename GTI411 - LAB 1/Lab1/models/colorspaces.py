@@ -15,7 +15,7 @@ class Lab1ColorConvertModel:
 
     
     def update_color(self, values: list[float], mode:str = "rgb"):
-        # print(f"Color {values} {mode}")
+        print(f"Color {values} {mode}")
         r, g, b = values
         self.curr_r = r
         self.curr_g = g

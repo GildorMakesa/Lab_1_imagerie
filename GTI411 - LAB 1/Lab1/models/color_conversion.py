@@ -1,5 +1,5 @@
 """A faire: implémenter la conversion HSV, CMYK et Lab vers et depuis RGB"""
-import math
+
 
 def rgb_2_rgb(r, g, b):
     """Cette fonction ne fait rien, elle sert uniquement pour illustrer"""
@@ -8,68 +8,74 @@ def rgb_2_rgb(r, g, b):
 
 
 def rgb_2_hsv(r, g, b):
-    """
-    Convertir une couleur RGB (0-255) en HSV (0-360 pour H, 0-1 pour S et V).
-    """
-    # Normalisation des valeurs en 0-1
-    r_prime = r / 255.0
-    g_prime = g / 255.0
-    b_prime = b / 255.0
-
-    # Trouver les valeurs max et min
-    c_max = max(r_prime, g_prime, b_prime)
-    c_min = min(r_prime, g_prime, b_prime)
+    r, g, b = r / 255.0, g / 255.0, b / 255.0  # Normalisation des valeurs RGB dans la plage [0, 1]
+    
+    c_max = max(r, g, b)
+    c_min = min(r, g, b)
     delta = c_max - c_min
-
-    # Calcul de la teinte (H)
+    
+    # Calcul de la teinte (hue)
     if delta == 0:
         h = 0
-    elif c_max == r_prime:
-        h = 60 * (((g_prime - b_prime) / delta) % 6)
-    elif c_max == g_prime:
-        h = 60 * (((b_prime - r_prime) / delta) + 2)
-    elif c_max == b_prime:
-        h = 60 * (((r_prime - g_prime) / delta) + 4)
-
-    # Calcul de la saturation (S)
-    s = 0 if c_max == 0 else delta / c_max
-
-    # Calcul de la valeur (V)
+    elif c_max == r:
+        h = (60 * ((g - b) / delta) + 360) % 360
+    elif c_max == g:
+        h = (60 * ((b - r) / delta) + 120) % 360
+    else:
+        h = (60 * ((r - g) / delta) + 240) % 360
+    
+    # Calcul de la saturation (saturation)
+    if c_max == 0:
+        s = 0
+    else:
+        s = delta / c_max
+    
+    # Calcul de la valeur (value)
     v = c_max
+    
+    return h, s * 100, v * 100  # Renvoi des valeurs de HSV (hue en degrés, saturation et valeur en pourcentage)
 
-    return round(h, 2), round(s, 2), round(v, 2)
+
 
 
 def hsv_2_rgb(h, s, v):
-    """
-    Convertir une couleur HSV (0-360 pour H, 0-1 pour S et V) en RGB (0-255).
-    """
+    # Normalisation de s et v de [0, 100] à [0, 1]
+    s = s / 100.0
+    v = v / 100.0
+    
+    # Normalisation de h de [0, 360] à [0, 1]
+    h = h / 360.0
+    
     c = v * s  # Chroma
-    x = c * (1 - abs((h / 60) % 2 - 1))  # Valeur intermédiaire
-    m = v - c  # Ajustement
-
-    # Identifier la région de la teinte
-    if 0 <= h < 60:
-        r_prime, g_prime, b_prime = c, x, 0
-    elif 60 <= h < 120:
-        r_prime, g_prime, b_prime = x, c, 0
-    elif 120 <= h < 180:
-        r_prime, g_prime, b_prime = 0, c, x
-    elif 180 <= h < 240:
-        r_prime, g_prime, b_prime = 0, x, c
-    elif 240 <= h < 300:
-        r_prime, g_prime, b_prime = x, 0, c
-    elif 300 <= h < 360:
-        r_prime, g_prime, b_prime = c, 0, x
+    x = c * (1 - abs(((h * 6) % 2) - 1))  # Composant intermédiaire
+    m = v - c  # Ajustement à la luminosité
+    
+    # Définir les valeurs RGB en fonction de l'angle h
+    if 0 <= h < 1 / 6:
+        r, g, b = c, x, 0
+    elif 1 / 6 <= h < 2 / 6:
+        r, g, b = x, c, 0
+    elif 2 / 6 <= h < 3 / 6:
+        r, g, b = 0, c, x
+    elif 3 / 6 <= h < 4 / 6:
+        r, g, b = 0, x, c
+    elif 4 / 6 <= h < 5 / 6:
+        r, g, b = x, 0, c
     else:
-        r_prime, g_prime, b_prime = 0, 0, 0
-
-    # Conversion en 0-255
-    r = round((r_prime + m) * 255)
-    g = round((g_prime + m) * 255)
-    b = round((b_prime + m) * 255)
-
+        r, g, b = c, 0, x
+    
+    # Appliquer le décalage m et passer les valeurs à l'échelle [0, 255]
+    r = int((r + m) * 255)
+    g = int((g + m) * 255)
+    b = int((b + m) * 255)
+    
     return r, g, b
+
+# Exemple d'utilisation
+h, s, v = 360, 100, 100  # Rouge
+r, g, b = hsv_2_rgb(h, s, v)
+print(f"RGB: {r}, {g}, {b}")
+
 
 
 def rgb_2_cmyk(r: int, g: int, b: int):
