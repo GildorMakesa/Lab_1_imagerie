@@ -6,51 +6,59 @@ from .utils import create_slider
 from Lab1.models import color_conversion
 
 
+def create_hsv_palette(height: int, width: int, hsv_color: list[float]):
+    """
+    Crée une image représentant une palette HSV, donnée par un canal constant.
+    """
+    image = np.zeros((height, width, 3), dtype=np.uint8)
+    h, w, _ = image.shape
+
+    for widx in range(w):
+        color = color_conversion.hsv_2_rgb(hsv_color[0], hsv_color[1], widx / w)
+        for hidx in range(h):
+            image[hidx, widx] = color
+    return image
+
 
 class HSVSlider(ColorSlider):
 
     def init_ui(self, layout: QVBoxLayout, red: int, green: int, blue: int):
-        # TODO
-        label = QLabel()
-        label.setText("TODO HSV")
+        """
+        Initialise l'interface avec les sliders pour Hue, Saturation et Value.
+        """
+        # Convert RGB en HSV
+        h, s, v = color_conversion.rgb_2_hsv(red, green, blue)
 
-        layout.addWidget(label)
+        # Hue slider
+        hue_palette = create_hsv_palette(self.height, self.width, [0, 1, 1])
+        hue_layout, self.hue_slider = create_slider(self.parent, "H", minval=0, maxval=360, default_value=120, slider_palette=hue_palette)
 
+        # Saturation slider
+        saturation_palette = create_hsv_palette(self.height, self.width, [h, 0, 1])
+        saturation_layout, self.saturation_slider = create_slider(self.parent, "S", minval=0, maxval=100, default_value=s * 100, slider_palette=saturation_palette)
+
+        # Value slider
+        value_palette = create_hsv_palette(self.height, self.width, [h, s, 0])
+        value_layout, self.value_slider = create_slider(self.parent, "V", minval=0, maxval=100, default_value=v * 100, slider_palette=value_palette)
+
+        # Écouter les mouvements des sliders et appeler la fonction 'value_changed'
+        self.hue_slider.valueChanged['int'].connect(self.value_changed)
+        self.saturation_slider.valueChanged['int'].connect(self.value_changed)
+        self.value_slider.valueChanged['int'].connect(self.value_changed)
+
+        # Ajouter les sliders à l'interface
+        layout.addLayout(hue_layout)
+        layout.addLayout(saturation_layout)
+        layout.addLayout(value_layout)
 
     def _sliders_to_rgb(self):
-        
-        # Convert to RGB
-        r, g, b = color_conversion.rgb_2_rgb(red, green, blue)
+        """
+        Convertit les valeurs des sliders HSV en une couleur RGB.
+        """
+        h = self.hue_slider.value()
+        s = self.saturation_slider.value() / 100  # Conversion de 0-100 à 0-1
+        v = self.value_slider.value() / 100  # Conversion de 0-100 à 0-1
 
-        # Red channel
-        red_palette = create_rgb_palette(self.height, self.width, [1, 0, 0])
-        red_layout, self.red_slider = create_slider(self.parent, "R", default_value=r, slider_palette=red_palette)
-
-        # Green channel
-        green_palette = create_rgb_palette(self.height, self.width, [0, 1, 0])
-        green_layout, self.green_slider = create_slider(self.parent, "G", default_value=g, slider_palette=green_palette)
-
-        # Blue channel
-        blue_palette = create_rgb_palette(self.height, self.width, [0, 0, 1])
-        blue_layout, self.blue_slider = create_slider(self.parent, "B", default_value=b, slider_palette=blue_palette)
-
-        # Ecouter les mouvements du slider et appelle la fonction 'value_changed'
-        self.red_slider.valueChanged['int'].connect(self.value_changed)
-        self.green_slider.valueChanged['int'].connect(self.value_changed)
-        self.blue_slider.valueChanged['int'].connect(self.value_changed)
-
-        # Ajoute les sliders à l'interface
-        #layout.addLayout(red_layout)
-        #layout.addLayout(green_layout)
-        #layout.addLayout(blue_layout)
-
-
-    #def _sliders_to_rgb(self):
-     #   r = self.red_slider.value()
-      #  g = self.green_slider.value()
-       # b = self.blue_slider.value()
-
-       # red, green, blue = color_conversion.rgb_2_rgb(r, g, b)
-        #return red, green, blue
-
-
+        # Conversion HSV -> RGB
+        r, g, b = color_conversion.hsv_2_rgb(h, s, v)
+        return r, g, b
