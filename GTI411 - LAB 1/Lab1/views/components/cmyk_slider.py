@@ -16,8 +16,6 @@ def create_cmyk_palette(height: int, width: int, cmykcolor: list[float]):
         c, m, y, k = cmykcolor
         factor = widx / w  # Facteur de position sur l'axe des couleurs
         rgb = color_conversion.cmyk_2_rgb(c* factor * 100, m * factor * 100, y * factor * 100, k * 100)
-        print(f"CMYK : C: {c}, M: {m}, Y: {y}, K: {k} → RGB: {rgb}")
-        #rgb = np.clip(rgb, 0, 255).astype(np.uint8)  # Normaliser les valeurs dans [0, 255]
         for hidx in range(h):
             image[hidx, widx] = rgb
     return image
