@@ -3,7 +3,8 @@ Laboratoire_1_GTI411
 
 # Partie 1 : Conversion entre les espaces de couleur
 
-L’objectif est d’apprendre à manipuler les espaces de couleurs suivants :
+L’objectif est d’apprendre à manipuler les espaces de couleurs suivants
+
 •	RGB
 •	HSV
 •	CMYK
@@ -23,9 +24,28 @@ Pour chaque slider à modifier, un fichier a été créé dans le dossier Lab1/v
 
 Pour cette partie vous devez implémenter les conversions vous-même à partir des formules du cours, sans utiliser OpenCV (ou équivalent).
 
+- ## Résumé Partie 1
+- ✅ RGB
+- ✅ HSV
+- ✅ CMYK
+- 🟡L.A.B (En cours)
+
+
+
 # Partie 2 : Décomposition d’une image
 Dans cette partie vous devrez charger une image (Menu > Add > Image) puis la décomposer en ces différents canaux (Il est conseillé d’utiliser l’image cube.jpg). Par exemple pour le format R.G.B, on a trois canaux (Rouge, Vert et Bleu), ainsi on souhaite les afficher de façon séparés (Figure 3). 
 Pour cela vous devrez modifier les fonctions présentent dans le fichier Lab1/models/decomposition.py (voir les « TODO »). Pour cette partie vous pouvez utiliser les fonctions de conversion d’OpenCV au besoin. Les canaux devront être affichés avec leur couleur respectives (exemple le rouge de RGB en niveau de rouge ou le Cyan de CMYK en niveau de cyan).
 
+
+- ## Résumé Partie 2
+- ✅ RGB
+- ✅ HSV
+- ✅ CMYK
+- 🟡L.A.B (En cours)
+
+
 # Partie 3 : Transformation d’image
 Pour cette partie, vous devrez implémentation la logique (Lab1/model/transform.py) pour pouvoir modifier le contraste et la luminosité de l’image lorsque l’on bouge les curseurs.
+
+- ## Résumé Partie 3
+- 🟡(En cours)

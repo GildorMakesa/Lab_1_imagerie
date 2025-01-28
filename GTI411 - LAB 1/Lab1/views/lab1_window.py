@@ -65,8 +65,8 @@ class Lab1_UI(object):
     def setupUi(self, Lab1_Window):
         Lab1_Window.setObjectName("Lab1_Window")
         Lab1_Window.setEnabled(True)
-        Lab1_Window.setMinimumSize(QtCore.QSize(1300, 900))
-        Lab1_Window.setMaximumSize(QtCore.QSize(1300, 900))
+        Lab1_Window.setMinimumSize(QtCore.QSize(800, 600))
+        Lab1_Window.setMaximumSize(QtCore.QSize(13000, 900))
         self.centralwidget = QtWidgets.QWidget(Lab1_Window)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.centralwidget)
