@@ -21,7 +21,6 @@ def create_hsv_palette(height: int, width: int, hsvcolor: list[float]):
         
         # Convert adjusted HSV to RGB
         rgb = color_conversion.hsv_2_rgb(h_prime, s_prime, v_prime)
-        print(f"HSV : H: {h_prime}, S: {s_prime}, V: {v_prime} → RGB: {rgb}")
         
         # Assign RGB values to each pixel in the image column
         for hidx in range(h):
