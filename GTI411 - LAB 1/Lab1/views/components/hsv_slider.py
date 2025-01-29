@@ -36,13 +36,13 @@ class HSVSlider(ColorSlider):
         h, s, v = color_conversion.rgb_2_hsv(red, green, blue)
 
         h_palette = create_hsv_palette(self.height, self.width, [360, 100, 100])
-        h_layout, self.h_slider = create_slider(self.parent, "H", minval=0, maxval=360, default_value=0, slider_palette=h_palette)
+        h_layout, self.h_slider = create_slider(self.parent, "H", minval=0, maxval=360, default_value=h, slider_palette=h_palette)
         
         s_palette = create_hsv_palette(self.height, self.width, [0, 0, 100])
-        s_layout, self.s_slider = create_slider(self.parent, "S", minval=0, maxval=100, default_value=50, slider_palette=s_palette)
+        s_layout, self.s_slider = create_slider(self.parent, "S", minval=0, maxval=100, default_value=s, slider_palette=s_palette)
 
         v_palette = create_hsv_palette(self.height, self.width, [0, 0, 100])
-        v_layout, self.v_slider = create_slider(self.parent, "V", minval=0, maxval=100,default_value=50, slider_palette=v_palette)
+        v_layout, self.v_slider = create_slider(self.parent, "V", minval=0, maxval=100,default_value=v, slider_palette=v_palette)
 
         # Connecter les sliders au changement de valeur
         self.h_slider.valueChanged['int'].connect(self.value_changed)
