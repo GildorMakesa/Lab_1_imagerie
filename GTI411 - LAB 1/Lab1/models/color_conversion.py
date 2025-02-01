@@ -133,8 +133,6 @@ def denormalize_rgb(r, g, b):
 # Conversion de RGB en XYZ
 def rgb_2_xyz(r, g, b):
     r, g, b = normalize_rgb(r, g, b)
-    
-    print(f"\nR: {r} // G: {g} // B {b} normalisation")
 
     # Application de la matrice de transformation RGB -> XYZ (espace de couleur sRGB)
     r = r / 12.92 if r <= 0.04045 else ((r + 0.055) / 1.055) ** 2.4
@@ -145,7 +143,6 @@ def rgb_2_xyz(r, g, b):
     x = 0.4124 * r + 0.3576 * g + 0.1805 * b
     y = 0.2126 * r + 0.7152 * g + 0.0722 * b
     z = 0.0193 * r + 0.1192 * g + 0.9505 * b
-    print(f"\nX: {x} // Y: {y} // Z {z} XYZ")
 
     return x, y, z
 
@@ -246,29 +243,3 @@ def xyz_2_rgb(x, y, z):
 
     
     return r, g, b
-
-""" 
-A faire: implémenter la conversion HSV, CMYK et Lab vers et depuis RGB
-
-
-def rgb_2_rgb(r, g, b):
-    Cette fonction ne fait rien, elle sert uniquement pour illustrer
-    return r, g, b
-
-
-
-def rgb_2_hsv(r, g, b):
-    return ...
-
-
-def hsv_2_rgb(h, s, v):
-    
-    #Normalise en 1-0 
-    r_prime = h / 255
-    g_prime = s / 255
-    b_prime = v / 255
-
-
-
-    return ...
-"""
