@@ -115,6 +115,13 @@ def cmyk_2_rgb(c: int, m: int, y: int, k: int):
 
     return r, g, b
 
+# Conversion de RGB en LAB
+def rgb_2_lab(r, g, b):
+    x, y, z = rgb_2_xyz(r, g, b)
+    return xyz_2_lab(x, y, z)
+
+
+
 # Fonction pour normaliser RGB [0, 255] en [0, 1]
 def normalize_rgb(r, g, b):
     return r / 255.0, g / 255.0, b / 255.0
@@ -146,7 +153,6 @@ def rgb_2_xyz(r, g, b):
 def xyz_2_lab(x, y, z):
     # Valeurs des points de référence de XYZ (D65)
     x_ref, y_ref, z_ref = 0.95047, 1.00000, 1.08883
-    print(f"\nX: {x} // Y: {y} // Z {z} avant normalisation")
 
     # Normalisation des valeurs X, Y, Z par rapport aux références
     x /= x_ref
@@ -168,22 +174,21 @@ def xyz_2_lab(x, y, z):
     x = f(x)
     y = f(y)
     z = f(z)
-    print(f"\nX: {x} // Y: {y} // Z {z} après transformation f(t)")
 
     # Calcul des valeurs L, A, B en utilisant les formules de conversion
     l = 116 * y - 16
     a = 500 * (x - y)
     b = 200 * (y - z)
 
-    print(f"\nL: {l} // A: {a} // B: {b} (LAB)")
-
     return l, a, b
 
 
-# Conversion de RGB en LAB
-def rgb_2_lab(r, g, b):
-    x, y, z = rgb_2_xyz(r, g, b)
-    return xyz_2_lab(x, y, z)
+
+
+# Conversion de LAB en RGB
+def lab_2_rgb(l, a, b):
+    x, y, z = lab_2_xyz(l, a, b)
+    return xyz_2_rgb(x, y, z)
 
 
 # Conversion de LAB en XYZ
@@ -195,6 +200,7 @@ def lab_2_xyz(l, a, b):
     x = a / 500 + y
     z = y - b / 200
     
+
     def f_inv(t):
         delta = 6 / 29
         # Si t > delta^3, appliquer t^(1/3)
@@ -202,12 +208,16 @@ def lab_2_xyz(l, a, b):
             return t**3
         # Sinon appliquer la formule alternative
         else:
-            return (t - 16 / 116) / 7.787
+            return (t - (16 / 116)) / 7.787
     
+    #x = max(0, min(1, f_inv(x) * x_ref))
+    #y = max(0, min(1, f_inv(y) * y_ref))
+    #z = max(0, min(1, f_inv(z) * z_ref))
+
+    # Application de f_inverse pour retrouver XYZ
     x = f_inv(x) * x_ref
     y = f_inv(y) * y_ref
     z = f_inv(z) * z_ref
-    
     return x, y, z
 
 # Conversion de XYZ en RGB
@@ -217,6 +227,10 @@ def xyz_2_rgb(x, y, z):
     g = -0.9689 * x + 1.8758 * y + 0.0415 * z
     b = 0.0556 * x - 0.2040 * y + 1.0570 * z
     
+    r = r * 12.92 if r <= 0.0031308 else 1.055 * r ** (1 / 2.4) - 0.055
+    g = g * 12.92 if g <= 0.0031308 else 1.055 * g ** (1 / 2.4) - 0.055
+    b = b * 12.92 if b <= 0.0031308 else 1.055 * b ** (1 / 2.4) - 0.055
+    
     # Gamma correction
     def gamma_correction(c):
         return 12.92 * c if c <= 0.0031308 else 1.055 * (c ** (1 / 2.4)) - 0.055
@@ -225,19 +239,13 @@ def xyz_2_rgb(x, y, z):
     g = gamma_correction(g)
     b = gamma_correction(b)
 
-    # Assurer les valeurs dans la plage [0, 255]
+    # Correction : Contraindre RGB à la plage [0, 255]
     r = int(max(0, min(255, r * 255)))
     g = int(max(0, min(255, g * 255)))
     b = int(max(0, min(255, b * 255)))
 
+    
     return r, g, b
-
-
-# Conversion de LAB en RGB
-def lab_2_rgb(l, a, b):
-    x, y, z = lab_2_xyz(l, a, b)
-    return xyz_2_rgb(x, y, z)
-
 
 """ 
 A faire: implémenter la conversion HSV, CMYK et Lab vers et depuis RGB

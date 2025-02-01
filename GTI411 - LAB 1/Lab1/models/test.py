@@ -25,17 +25,23 @@ hsv_values = rgb_2_hsv(*rgb_values)
 rgb_values_converted = hsv_2_rgb(*hsv_values)
 print(f"\nRGB {rgb_values} converti en HSV puis reconverti en RGB : {rgb_values_converted}")
 
+
+
+
+
+
+
 print(f"\n\n\n --- Tests pour RGB <-> LAB ---")
 
 
 # Test avec une couleur RGB (rouge pur)
 print(f"Test couleur rouge RGB")
-rgb_values = (23, 23, 23)
+rgb_values = (255, 0, 0)
 lab_values = rgb_2_lab(*rgb_values)
-print(f"\n\nRGB {rgb_values} converti en LAB : {lab_values}")
+print(f"\n\nRGB {rgb_values} converti en LAB : {lab_values}\n\n\n")
 
 # Test inverse : convertir LAB vers RGB
-lab_values = (53.2408, 80.0925, 67.2032)  # Valeurs attendues pour le rouge
+lab_values = (97.14, -21.56, 94.482)  # Valeurs attendues pour le rouge
 rgb_values_converted = lab_2_rgb(*lab_values)
 print(f"\n\nLAB {lab_values} converti en RGB : {rgb_values_converted}")
 
