@@ -197,7 +197,12 @@ def lab_2_xyz(l, a, b):
     
     def f_inv(t):
         delta = 6 / 29
-        return t**3 if t > delta else (29 / 3) * (t - 4 / 29)
+        # Si t > delta^3, appliquer t^(1/3)
+        if t > delta:
+            return t**3
+        # Sinon appliquer la formule alternative
+        else:
+            return (t - 16 / 116) / 7.787
     
     x = f_inv(x) * x_ref
     y = f_inv(y) * y_ref
@@ -212,11 +217,20 @@ def xyz_2_rgb(x, y, z):
     g = -0.9689 * x + 1.8758 * y + 0.0415 * z
     b = 0.0556 * x - 0.2040 * y + 1.0570 * z
     
-    r = r * 12.92 if r <= 0.0031308 else 1.055 * r ** (1 / 2.4) - 0.055
-    g = g * 12.92 if g <= 0.0031308 else 1.055 * g ** (1 / 2.4) - 0.055
-    b = b * 12.92 if b <= 0.0031308 else 1.055 * b ** (1 / 2.4) - 0.055
-    
-    return denormalize_rgb(r, g, b)
+    # Gamma correction
+    def gamma_correction(c):
+        return 12.92 * c if c <= 0.0031308 else 1.055 * (c ** (1 / 2.4)) - 0.055
+
+    r = gamma_correction(r)
+    g = gamma_correction(g)
+    b = gamma_correction(b)
+
+    # Assurer les valeurs dans la plage [0, 255]
+    r = int(max(0, min(255, r * 255)))
+    g = int(max(0, min(255, g * 255)))
+    b = int(max(0, min(255, b * 255)))
+
+    return r, g, b
 
 
 # Conversion de LAB en RGB
