@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.colors import ListedColormap
 import cv2
 
 from Lab1.models.color_conversion import *
