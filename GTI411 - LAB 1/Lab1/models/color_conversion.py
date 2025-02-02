@@ -8,8 +8,9 @@ def rgb_2_rgb(r, g, b):
 
 
 def rgb_2_hsv(r, g, b):
-    r, g, b = r / 255.0, g / 255.0, b / 255.0  # Normalisation des valeurs RGB dans la plage [0, 1]
-    
+    # Normalisation des valeurs RGB dans la plage [0, 1]
+    r, g, b = r / 255.0, g / 255.0, b / 255.0   
+
     c_max = max(r, g, b)
     c_min = min(r, g, b)
     delta = c_max - c_min
@@ -33,8 +34,8 @@ def rgb_2_hsv(r, g, b):
     # Calcul de la valeur (value)
     v = c_max
     
-    return int(h), int(s * 100), int(v * 100)  # Renvoi des valeurs de HSV (hue en degrés, saturation et valeur en pourcentage)
-
+    # Renvoi des valeurs de HSV (hue en degrés, saturation et valeur en pourcentage)
+    return int(h), int(s * 100), int(v * 100)  
 
 
 
@@ -71,9 +72,6 @@ def hsv_2_rgb(h, s, v):
     
     return r, g, b
 
-# Exemple d'utilisation
-h, s, v = 360, 100, 100  # Rouge
-r, g, b = hsv_2_rgb(h, s, v)
 
 
 
@@ -115,11 +113,12 @@ def cmyk_2_rgb(c: int, m: int, y: int, k: int):
 
     return r, g, b
 
+
+
 # Conversion de RGB en LAB
 def rgb_2_lab(r, g, b):
     x, y, z = rgb_2_xyz(r, g, b)
     return xyz_2_lab(x, y, z)
-
 
 
 # Fonction pour normaliser RGB [0, 255] en [0, 1]
