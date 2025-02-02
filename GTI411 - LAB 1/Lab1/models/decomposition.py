@@ -73,8 +73,34 @@ class Lab1DecompositionModel:
 
     def _decompose_lab(self):
         if self.image is None:
-            return
-        #TODO
+            return 
+        
+        height, width, _ = self.image.shape
+        lab_image = np.zeros((height, width, 3))
+
+        for i in range(height):
+            for j in range(width):
+                r, g, b = self.image[i, j]
+                lab_image[i, j] = rgb_2_lab(r, g, b)
+
+        fig = plt.figure()
+
+        plt.subplot(2, 4, 1)
+        plt.imshow(self.image)
+        plt.title("Base")
+
+        channel_names = ["Luminance", "Green-Red", "Blue-Yellow"]
+        colormaps = ["gray", "PiYG", "BrBG"]
+
+        for idx, (name, cmap) in enumerate(zip(channel_names, colormaps)):
+            plt.subplot(2, 4, 4 + idx)
+            plt.title(name)
+            
+            im = plt.imshow(lab_image[:, :, idx], cmap=cmap)
+            plt.colorbar(im)
+
+        plt.tight_layout()
+        plt.show()
 
 
     def _decompose_hsv(self):
@@ -124,5 +150,3 @@ class Lab1DecompositionModel:
 
         else:
             raise NotImplementedError(f"{self.color_space} is not implemented")
-        
-    

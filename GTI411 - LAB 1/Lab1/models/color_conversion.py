@@ -110,3 +110,133 @@ def cmyk_2_rgb(c: int, m: int, y: int, k: int):
     r, g, b = [max(0, min(255, int(v))) for v in (r, g, b)]
 
     return r, g, b
+
+
+
+# Conversion de RGB en LAB
+def rgb_2_lab(r, g, b):
+    x, y, z = rgb_2_xyz(r, g, b)
+    return xyz_2_lab(x, y, z)
+
+
+# Fonction pour normaliser RGB [0, 255] en [0, 1]
+def normalize_rgb(r, g, b):
+    return r / 255.0, g / 255.0, b / 255.0
+
+# Fonction pour dénormaliser les valeurs RGB [0, 1] en [0, 255]
+def denormalize_rgb(r, g, b):
+    return int(r * 255), int(g * 255), int(b * 255)
+
+# Conversion de RGB en XYZ
+def rgb_2_xyz(r, g, b):
+    r, g, b = normalize_rgb(r, g, b)
+
+    # Application de la matrice de transformation RGB -> XYZ (espace de couleur sRGB)
+    r = r / 12.92 if r <= 0.04045 else ((r + 0.055) / 1.055) ** 2.4
+    g = g / 12.92 if g <= 0.04045 else ((g + 0.055) / 1.055) ** 2.4
+    b = b / 12.92 if b <= 0.04045 else ((b + 0.055) / 1.055) ** 2.4
+    
+    # Matrice de transformation RGB -> XYZ
+    x = 0.4124 * r + 0.3576 * g + 0.1805 * b
+    y = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    z = 0.0193 * r + 0.1192 * g + 0.9505 * b
+
+    return x, y, z
+
+# Conversion de XYZ en LAB
+def xyz_2_lab(x, y, z):
+    # Valeurs des points de référence de XYZ (D65)
+    x_ref, y_ref, z_ref = 0.95047, 1.00000, 1.08883
+
+    # Normalisation des valeurs X, Y, Z par rapport aux références
+    x /= x_ref
+    y /= y_ref
+    z /= z_ref
+
+    # Fonction de transformation f(t)
+    def f(t):
+        delta = 6 / 29  # Définition de la constante delta
+
+        # Si t > delta^3, appliquer t^(1/3)
+        if t > delta**3:
+            return t**(1/3)
+        # Sinon appliquer la formule alternative
+        else:
+            return (t / (29**2)) + 4 / 29
+    
+    # Application de la fonction f(t) pour chaque composant
+    x = f(x)
+    y = f(y)
+    z = f(z)
+
+    # Calcul des valeurs L, A, B en utilisant les formules de conversion
+    l = 116 * y - 16
+    a = 500 * (x - y)
+    b = 200 * (y - z)
+
+    return l, a, b
+
+
+
+
+# Conversion de LAB en RGB
+def lab_2_rgb(l, a, b):
+    x, y, z = lab_2_xyz(l, a, b)
+    return xyz_2_rgb(x, y, z)
+
+
+# Conversion de LAB en XYZ
+def lab_2_xyz(l, a, b):
+    # Valeurs des points de référence de XYZ (D65)
+    x_ref, y_ref, z_ref = 0.95047, 1.00000, 1.08883
+    
+    y = (l + 16) / 116
+    x = a / 500 + y
+    z = y - b / 200
+    
+
+    def f_inv(t):
+        delta = 6 / 29
+        # Si t > delta^3, appliquer t^(1/3)
+        if t > delta:
+            return t**3
+        # Sinon appliquer la formule alternative
+        else:
+            return (t - (16 / 116)) / 7.787
+    
+    #x = max(0, min(1, f_inv(x) * x_ref))
+    #y = max(0, min(1, f_inv(y) * y_ref))
+    #z = max(0, min(1, f_inv(z) * z_ref))
+
+    # Application de f_inverse pour retrouver XYZ
+    x = f_inv(x) * x_ref
+    y = f_inv(y) * y_ref
+    z = f_inv(z) * z_ref
+    return x, y, z
+
+# Conversion de XYZ en RGB
+def xyz_2_rgb(x, y, z):
+    # Matrice de transformation XYZ -> RGB
+    r = 3.2406 * x - 1.5372 * y - 0.4986 * z
+    g = -0.9689 * x + 1.8758 * y + 0.0415 * z
+    b = 0.0556 * x - 0.2040 * y + 1.0570 * z
+    
+    r = r * 12.92 if r <= 0.0031308 else 1.055 * r ** (1 / 2.4) - 0.055
+    g = g * 12.92 if g <= 0.0031308 else 1.055 * g ** (1 / 2.4) - 0.055
+    b = b * 12.92 if b <= 0.0031308 else 1.055 * b ** (1 / 2.4) - 0.055
+    
+    # Gamma correction
+    def gamma_correction(c):
+        return 12.92 * c if c <= 0.0031308 else 1.055 * (c ** (1 / 2.4)) - 0.055
+
+    r = gamma_correction(r)
+    g = gamma_correction(g)
+    b = gamma_correction(b)
+
+    # Correction : Contraindre RGB à la plage [0, 255]
+    r = int(max(0, min(255, r * 255)))
+    g = int(max(0, min(255, g * 255)))
+    b = int(max(0, min(255, b * 255)))
+
+    
+    return r, g, b
