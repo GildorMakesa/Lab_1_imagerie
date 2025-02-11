@@ -1,31 +1,66 @@
-# Lab_1_imagerie
-Laboratoire_1_GTI411
+# <p align="center">Laboratoire 2 : Filtrage </p>
 
-# Partie 1 : Conversion entre les espaces de couleur
 
-L’objectif est d’apprendre à manipuler les espaces de couleurs suivants :
-•	RGB
-•	HSV
-•	CMYK
-•	L.A.B
+### Partie 1 : Filtrage spatial
 
-Interface de départ
-Pour cette partie vous devrez ajouter une forme à l’aide de l’interface fournie (Figure 1). Vous pourrez ensuite changer la couleur en appuyant sur le bouton « Color ». A ce moment, une fenêtre supplémentaire s’ouvrira (Figure 2). A partir de celle-ci vous pourrez changer la couleur en glissant les curseurs. 
+Le système fournit une interface usager composée de trois onglets. Sous le premier : ’’Spatial Filter’’, 4 paramètres peuvent être spécifiés (voir fig. 1): 
 
-Consignes
-Dans l’exemple, le format RGB est implémenté. Vous devrez faire de même pour HSV, CMYK et L.A.B. Pour chacun de ces formats de devrez :
-1.	Afficher correctement la palette de couleur à l’arrière : Exemple (Figure 2) pour le rouge la palette va du noir au rouge. Pour savoir à quoi doivent ressembler les palettes, vous pouvez vous aider du site : https://www.w3schools.com/colors/colors_rgb.asp
-2.	Choisir la bonne plage de valeur pour chaque curseur (ex : rouge du RGB : [0 : 255])
-3.	Convertir la valeur reçue en RGB et placer les curseurs au bon endroit dans l’espace de couleur
-4.	Convertir la couleur dans l’espace de couleur actuel (CMYK, HSV ou lab) vers RGB pour l’afficher dans la fonction _sliders_to_rgb de chaque curseur
+•	Le type du filtre à appliquer ‘’Filter type’’.
+•	La taille des noyaux (utilisés par certains filtres)
+•	La façon dont les bordures seront traitées ‘’Handling border’’.
+•	La façon dont les valeurs filtrées sont converties dans l'intervalle affichable 0..255 ‘’Range’’.
 
-Pour chaque slider à modifier, un fichier a été créé dans le dossier Lab1/views/components, vous devrez donc modifier les fichiers cmyk_slider.py, hsv_slider.py et lab_slider.py. Afin de séparer l’interface graphique et la partie « logique » du code, les fonctions de conversion d’espace de couleur seront placées dans le fichier Lab1/models/color_conversion.py. Pour implémenter les différents curseurs, aidez-vous du curseur RGB fourni et déjà implémenté. Des commentaires avec écrit « TODO » vous indiquerons les endroits à modifier.
+L’interface et la gestion des boutons est déjà codée. Vous avez juste à modifier la fonction « apply_filter » dans le fichier modes/spatial_filter_model.py :
 
-Pour cette partie vous devez implémenter les conversions vous-même à partir des formules du cours, sans utiliser OpenCV (ou équivalent).
+Les variables sont prêtes à être utilisées :
+-	Filtering_method : type du filtre
+-	Kernel_size: taille du noyau (attention si le champs est vide, le programme peut crash, il faut gérer cette exception)
+-	Range_methode : Méthode pour gérer les pixels en dehors de [0 :255]
+-	Handling_border_method : Méthode pour gérer les bordures (voir doc OpenCV)
+
+En fonction de la version du code que vous avez, il se peut que vous n’arriviez pas à déclencher le filtre médian. La raison est que la chaîne de caractère est « median  » (avec un espace à la fin), vous pouvez donc modifier votre condition (if etc.) en conséquence
+
+### Résumé de la partie 1 
+- Filtre Moyen    🟡
+- Filtre Gaussien 🟡
+- Filtre Médian   🟡
+- Filtre Sobel 
+  - Sobel X :     🟡 
+  - Sobel Y :     🟡 
+  - Combié :      🟡 
+
 
 # Partie 2 : Décomposition d’une image
-Dans cette partie vous devrez charger une image (Menu > Add > Image) puis la décomposer en ces différents canaux (Il est conseillé d’utiliser l’image cube.jpg). Par exemple pour le format R.G.B, on a trois canaux (Rouge, Vert et Bleu), ainsi on souhaite les afficher de façon séparés (Figure 3). 
-Pour cela vous devrez modifier les fonctions présentent dans le fichier Lab1/models/decomposition.py (voir les « TODO »). Pour cette partie vous pouvez utiliser les fonctions de conversion d’OpenCV au besoin. Les canaux devront être affichés avec leur couleur respectives (exemple le rouge de RGB en niveau de rouge ou le Cyan de CMYK en niveau de cyan).
+Canny est un algorithme à plusieurs étapes, il faut lisser l'image avec un filtre Gaussien, calculer les composantes du gradient avec un filtre Sobel, puis isoler les maximas locaux dans la carte des gradients et appliquer un seuillage hystérésis pour identifier les contours de l'image. Pour vous aider, l’interface du filtre est déjà préparée. 
+
+Ce qui est demandé :
+•	Vous devez maitriser l’ajustement des paramètres du filtre (seuils et taille du filtre gaussien) car il vous sera demandé de filtrer de nouvelles images lors de la démonstration, puis de justifier les valeurs des paramètres.
+•	Pour l’affichage, on doit retrouver l’image originale, l’image lissée, les composants du gradient, les maxima locaux, les contours résultant de Canny.
+
+Pour cette partie, vous avez uniquement à modifier la fonction « apply_filter » dans models/canny_filter_model.py
+
+### Résumé de la partie 2
+- Lissage avec un filtre gaussien         🟡
+- Gradient de l’image à l’aide de Sobel   🟡
+- Suppression non maximale                🟡
+- Résultat final                          🟡
+
+
+
+
 
 # Partie 3 : Transformation d’image
-Pour cette partie, vous devrez implémentation la logique (Lab1/model/transform.py) pour pouvoir modifier le contraste et la luminosité de l’image lorsque l’on bouge les curseurs.
+Dans cette partie, vous testerez les filtres fréquentiels. Le travail demandé :
+•	Utilisez l’interface fournie qui permet à l’utilisateur d’entrer la fréquence de coupure de chaque filtre ainsi que le paramètre du profil (n) du filtre Butterworth. À l’affichage, on doit retrouver pour chaque filtre : l’image originale, le spectre original, l’image filtrée, et le spectre de l'image filtrée.
+•	Implémenter les deux filtres passe bas idéal et passe bas butterworth.
+•	Tester les deux filtres avec différentes valeurs de n. Puis comparer le résultat obtenu avec les deux filtres.
+•	Faites le même travail pour les filtres passe haut idéal et passe haut butterworth.
+
+Pour cette partie vous avez 4 filtres à implémenter, donc 4 fonctions à compléter dans models/freq_filter_model.py
+Par exemple pour le passe-bas avec butterworth 
+
+### Résumé de la partie 3
+- Passe haut et passe bas idéal
+- Passe haut et passe bas Butterworth
+
+
