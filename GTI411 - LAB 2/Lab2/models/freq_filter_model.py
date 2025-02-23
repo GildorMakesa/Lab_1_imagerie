@@ -22,11 +22,11 @@ class FrequencyFilterModel:
 
 
     def update_cutoff(self, value:int):
-        self.cutoff_freq = value
+        self.cutoff_freq = int(value)
         
 
     def update_n_params_butter(self, value:int):
-        self.n_params_butter = value
+        self.n_params_butter = int(value)
 
     
     def apply_ideal_lowpass_filter(self):
@@ -36,8 +36,8 @@ class FrequencyFilterModel:
 
         print(f"Applying with ideal lowpass with:  {self.cutoff_freq}")
 
-        original_image_spectrum = create_fake_image(image, "Orig spectrum")
-        ideal_filter_spectrum = create_fake_image(image, "Ideal spectrum") 
+        original_image_spectrum = visualize_spectrum(get_image_spectrum(image))
+        ideal_filter_spectrum = visualize_spectrum(ideal_lowpass_filter(get_image_spectrum(image), self.cutoff_freq))
         ideal_filter_recons = create_fake_image(image, "Ideal recons") 
 
         images = {
@@ -103,3 +103,49 @@ class FrequencyFilterModel:
             'butter_recons': butter_filter_recons,
         }
         return images
+    
+################################################################################
+
+def get_image_spectrum(image):
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    dft = np.fft.fft2(image)
+    dft_shift = np.fft.fftshift(dft)
+    
+    magnitude_spectrum = 20 * np.log(np.abs(dft_shift) + 1)  # Adding 1 to avoid log(0)
+
+    spectrum_image = cv2.normalize(magnitude_spectrum, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    
+    #Create an RGB image by stacking the grayscale image across three channels
+    #rgb_spectrum_image = cv2.merge([spectrum_image, spectrum_image, spectrum_image])
+    
+    return spectrum_image
+
+
+def visualize_spectrum(spectrum_image):
+    return cv2.merge([spectrum_image, spectrum_image, spectrum_image])
+
+
+
+def ideal_lowpass_filter(spectrum_image, cutoff_freq):
+    height, width = spectrum_image.shape[:2]
+
+    x = np.arange(-width // 2, width // 2)
+    y = np.arange(-height // 2, height // 2)
+    X, Y = np.meshgrid(x, y)
+
+    D = np.sqrt(X**2 + Y**2)
+    H = np.zeros((height, width))
+    H[D <= cutoff_freq] = 1
+
+    dft = np.fft.fft2(spectrum_image)
+    dft_shift = np.fft.fftshift(dft)
+    filtered_spectrum = dft_shift * H
+
+    filtered_image = np.fft.ifft2(np.fft.ifftshift(filtered_spectrum))
+
+    filtered_image_magnitude = np.abs(filtered_image)
+    filtered_image_normalized = cv2.normalize(filtered_image_magnitude, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+    return filtered_image_normalized

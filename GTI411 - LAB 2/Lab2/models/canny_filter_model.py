@@ -24,15 +24,15 @@ class CannyFilterModel:
 
     
     def update_min_threshold(self, value:int):
-        self.min_threshold = value
+        self.min_threshold = int(value)
         
 
     def update_max_threshold(self, value:int):
-        self.max_threshold = value
+        self.max_threshold = int(value)
 
 
     def update_gaussian_filter_size(self, value:int):
-        self.gaussian_filter_size = value
+        self.gaussian_filter_size = int(value)
 
 
     
@@ -50,8 +50,9 @@ class CannyFilterModel:
         smoothed_image = create_fake_image(image, "smoothed")
         gradx_image = create_fake_image(image, "gradient_x")
         grady_image = create_fake_image(image, "gradient_y")
-        locmax_image = create_fake_image(image, "local_maxima")
+        locmax_image = self.locmax_image(image, 3)
         final_image = create_fake_image(image, "final")
+
 
         images = {
             'smoothed': smoothed_image,
@@ -60,4 +61,32 @@ class CannyFilterModel:
             'local_maxima': locmax_image,
             'final': final_image,
         }
+
+
         return images
+    
+
+    def locmax_image(self, image, neighborhood_size=3):
+        #convert to grayscale
+        if len(image.shape) == 3:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        #reflection des bords
+        pad_size = neighborhood_size // 2
+        padded_image = cv2.copyMakeBorder(image, pad_size, pad_size, pad_size, pad_size, cv2.BORDER_REFLECT)
+
+        locmax = np.zeros_like(image, dtype=np.uint8)
+
+        #trouve les maximums
+        for y in range(image.shape[0]):
+            for x in range(image.shape[1]):
+                neighborhood = padded_image[y:y + neighborhood_size, x:x + neighborhood_size]
+
+                if image[y, x] == np.max(neighborhood) and image[y, x] != np.min(neighborhood):
+                    locmax[y, x] = 255
+
+        #back to rgb
+        locmax_rgb = cv2.cvtColor(locmax, cv2.COLOR_GRAY2BGR)
+
+        return locmax_rgb
+
