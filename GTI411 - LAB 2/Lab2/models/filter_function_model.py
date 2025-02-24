@@ -10,138 +10,42 @@ class FilterFunction():
         self.handling_border_method = handling_border_method
         self.range_method = range_method
 
-    def apply_sobel_x(self, image):
-            # Vérifie que le kernel est bien un entier impair incluant le 0
-            if (self.kernel_size == 0):
-                update_ksize = 0
-            else:    
-                update_ksize = max(0, self.kernel_size | 1)  # Assure que c'est impair et ≥ 3
-
-
-
-            if self.handling_border_method == "Copy":
-                update_border_type = cv2.BORDER_REPLICATE
-            elif self.handling_border_method == "Circular":
-                update_border_type = cv2.BORDER_WRAP 
-            elif self.handling_border_method == "Mirror":
-                update_border_type = cv2.BORDER_REFLECT
-            elif self.handling_border_method == "None":
-                update_border_type = cv2.BORDER_CONSTANT
-            else:
-                update_border_type = cv2.BORDER_DEFAULT
-
-           
-
-            grad_x = cv2.Sobel(image, ddepth=cv2.CV_64F, dx=1, dy=0, ksize=update_ksize, borderType=update_border_type)
-            
-            if self.range_method == "Abs and normalize to 255":
-             sobel_image = np.abs(grad_x)
-             sobel_image = cv2.normalize(sobel_image, None, 0, 255, cv2.NORM_MINMAX)
-        
-            elif self.range_method == "Abs and normalize 0 to 255":
-             sobel_image = np.abs(grad_x)
-             sobel_image = np.clip(sobel_image, None, 0, 255, cv2.NORM_MINMAX)
-            
-            elif self.range_method == "Normalize 0 to 255":
-             sobel_image = cv2.normalize(grad_x, 0, 255).astype(np.uint8)
-            
-            elif self.range_method == "Clamp 0 ... 255":
-             sobel_image = np.clip(grad_x, 0, 255).astype(np.uint8)
-
-
-            sobel_image = np.clip(grad_x, 0, 255).astype(np.uint8)
-            print("Filtre Sobel applique")
-            return sobel_image
-
-    def apply_sobel_y(self, image):
-            # Vérifie que le kernel est bien un entier impair incluant le 0
-            if (self.kernel_size == 0):
-                update_ksize = 0
-            else:    
-                update_ksize = max(0, self.kernel_size | 1)  # Assure que c'est impair et ≥ 3
-
-
-
-            if self.handling_border_method == "Copy":
-                update_border_type = cv2.BORDER_REPLICATE
-            elif self.handling_border_method == "Circular":
-                update_border_type = cv2.BORDER_WRAP 
-            elif self.handling_border_method == "Mirror":
-                update_border_type = cv2.BORDER_REFLECT
-            elif self.handling_border_method == "None":
-                update_border_type = cv2.BORDER_CONSTANT
-            else:
-                update_border_type = cv2.BORDER_DEFAULT
-
-           
-
-            grad_y = cv2.Sobel(image, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=update_ksize, borderType=update_border_type)
-            
-            
-            if self.range_method == "Abs and normalize to 255":
-             sobel_image = np.abs(grad_y)
-             sobel_image = cv2.normalize(sobel_image, None, 0, 255, cv2.NORM_MINMAX)
-        
-            elif self.range_method == "Abs and normalize 0 to 255":
-             sobel_image = np.abs(grad_y)
-             sobel_image = np.clip(sobel_image, None, 0, 255, cv2.NORM_MINMAX)
-            
-            elif self.range_method == "Normalize 0 to 255":
-             sobel_image = cv2.normalize(grad_y, 0, 255).astype(np.uint8)
-            
-            elif self.range_method == "Clamp 0 ... 255":
-             sobel_image = np.clip(grad_y, 0, 255).astype(np.uint8)
-
-
-            sobel_image = np.clip(grad_y, 0, 255).astype(np.uint8)
-            print("Filtre Sobel applique")
-            return sobel_image
-
+    
 
     def apply_sobel(self, image):
-            # Vérifie que le kernel est bien un entier impair incluant le 0
-            if (self.kernel_size == 0):
-                update_ksize = 0
-            else:    
-                update_ksize = max(0, self.kernel_size | 1)  # Assure que c'est impair et ≥ 3
+        # Vérifie que le kernel est bien un entier impair incluant le 0
+        if (self.kernel_size == 0):
+            update_ksize = 0
+        else:    
+            update_ksize = max(0, self.kernel_size | 1)  # Assure que c'est impair et ≥ 3
 
 
 
-            if self.handling_border_method == "Copy":
-                update_border_type = cv2.BORDER_REPLICATE
-            elif self.handling_border_method == "Circular":
-                update_border_type = cv2.BORDER_WRAP 
-            elif self.handling_border_method == "Mirror":
-                update_border_type = cv2.BORDER_REFLECT
-            elif self.handling_border_method == "None":
-                update_border_type = cv2.BORDER_CONSTANT
-            else:
-                update_border_type = cv2.BORDER_DEFAULT
+            # Gestion des bordures
+        border_methods = {
+            "Copy": cv2.BORDER_REPLICATE,
+            "Circular": cv2.BORDER_REFLECT,
+            "Mirror": cv2.BORDER_REFLECT101,
+            "None": cv2.BORDER_CONSTANT
+        }
+        update_border_type = border_methods.get(self.handling_border_method, cv2.BORDER_DEFAULT)
 
-           
 
-            grad_x = cv2.Sobel(image, ddepth=cv2.CV_64F, dx=1, dy=0, ksize=update_ksize, borderType=update_border_type)
-            grad_y = cv2.Sobel(image, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=update_ksize, borderType=update_border_type)
-            magnitide_sobel_image = cv2.magnitude(grad_x, grad_y)
-            
-            if self.range_method == "Abs and normalize to 255":
-             sobel_image = np.absdiff(magnitide_sobel_image)
-             sobel_image = cv2.normalize(magnitide_sobel_image, None, 0, 255, cv2.NORM_MINMAX)
+
+        grad_x = cv2.Sobel(image, ddepth=cv2.CV_64F, dx=1, dy=0, ksize=update_ksize, borderType=update_border_type)
+        grad_y = cv2.Sobel(image, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=update_ksize, borderType=update_border_type)
+        magnitide_sobel_image = cv2.magnitude(grad_x, grad_y)
         
-            elif self.range_method == "Abs and normalize 0 to 255":
-             sobel_image = np.abs(magnitide_sobel_image)
-             sobel_image = np.clip(magnitide_sobel_image, None, 0, 255, cv2.NORM_MINMAX)
-            
-            elif self.range_method == "Normalize 0 to 255":
-             sobel_image = cv2.normalize(magnitide_sobel_image, 0, 255).astype(np.uint8)
-            
-            elif self.range_method == "Clamp 0 ... 255":
-             sobel_image = np.clip(magnitide_sobel_image, 0, 255).astype(np.uint8)
-
-
+        if self.range_method == "Clamp 0 ... 255":
             sobel_image = np.clip(magnitide_sobel_image, 0, 255).astype(np.uint8)
-            print("Filtre Sobel applique")
-            return sobel_image
+
+        if self.range_method == "Abs and normalize to 255":
+            sobel_image = np.abs(magnitide_sobel_image)
+            sobel_image = cv2.normalize(sobel_image, None, 0, 255, cv2.NORM_MINMAX)
+
+
+        print("Filtre Sobel applique")
+        return sobel_image
         
     def apply_gaussian(self, image):
         if self.kernel_size <= 0 or self.kernel_size % 2 == 0:

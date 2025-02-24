@@ -31,26 +31,25 @@ class SpatialFilterModel:
     
 
     def apply_filter(self):
+        # Crée une instance de FilterFunction
+        filter_function_instance = FilterFunction(self.filtering_method,self.kernel_size,self.handling_border_method,self.range_method)
+
         if self.source_image is None:
             return None
         image = self.source_image.copy()
 
-        print(f"Applying with {self.filtering_method}")
-        print(f"Applying with {self.kernel_size}")
-        print(f"Applying with {self.handling_border_method}")
-        print(f"Applying with {self.range_method}")
+        
+        print(f"Applying with Filtre : {self.filtering_method}")
+        print(f"Applying with Kernel : {self.kernel_size}")
+        print(f"Applying with Bordure : {self.handling_border_method}")
+        print(f"Applying with Range : {self.range_method}")
 
-         # Crée une instance de FilterFunction
-        filter_function_instance = FilterFunction(self.filtering_method,self.kernel_size,self.handling_border_method,self.range_method)
 
         # Dictionnaire des filtres
         filters = {
             "Sobel": filter_function_instance.apply_sobel,
-            "Sobel x-axis": filter_function_instance.apply_sobel_x,
-            "Sobel y-axis": filter_function_instance.apply_sobel_y,
             "Gaussian": filter_function_instance.apply_gaussian,
             "Median ": filter_function_instance.apply_median,
-
         }
 
          # Vérifiez si le filtre existe dans le dictionnaire et l'utiliser
