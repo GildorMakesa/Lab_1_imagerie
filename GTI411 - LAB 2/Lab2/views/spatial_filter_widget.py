@@ -169,8 +169,7 @@ class SpatialFilterWidget(QtWidgets.QWidget):
         self.filter_method.currentTextChanged.connect(lambda x: event_manager.trigger("on_filter_method_changed", x))
         self.range_method.currentTextChanged.connect(lambda x: event_manager.trigger("on_range_method_changed", x))
         self.border_dropdown.currentTextChanged.connect(lambda x: event_manager.trigger("on_border_method_changed", x))
-        self.kernel_size_text.textChanged.connect(lambda x: event_manager.trigger("on_kernel_size_changed", x))
-
+        self.kernel_size_text.textChanged.connect(self.update_kernel)
 
         # self.filter_method.currentIndexChanged.connect(self.filterChanged)
 
@@ -191,6 +190,12 @@ class SpatialFilterWidget(QtWidgets.QWidget):
         pixmap = QPixmap(filepath)
         self.label_3.setPixmap(pixmap)
 
+    def update_kernel(self, value):
+        try:
+            self.kernel_size = int(value)  # Convertir en entier
+            event_manager.trigger("on_kernel_size_changed", self.kernel_size)  
+        except ValueError:
+            self.kernel_size = 1  # Valeur par défaut si l'entrée est invalide
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
