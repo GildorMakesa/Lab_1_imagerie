@@ -36,9 +36,23 @@ class FrequencyFilterModel:
 
         print(f"Applying with ideal lowpass with:  {self.cutoff_freq}")
 
-        original_image_spectrum = visualize_spectrum(get_image_spectrum(image))
-        ideal_filter_spectrum = visualize_spectrum(ideal_lowpass_filter(get_image_spectrum(image), self.cutoff_freq))
-        ideal_filter_recons = create_fake_image(image, "Ideal recons") 
+
+
+
+        dft_shift = transforme_de_fourier(image)
+        masque = creer_masque_passe_bas(image, self.cutoff_freq)
+        dft_shift_filtered = appliquer_masque(dft_shift, masque)
+
+   
+        original_image_spectrum = calculer_spectre_magnitude(dft_shift)
+        ideal_filter_spectrum = calculer_spectre_magnitude(dft_shift_filtered)
+
+
+        ideal_filter_recons = appliquer_filtre(dft_shift_filtered)
+
+
+
+
 
         images = {
             'original_spectrum': original_image_spectrum,
@@ -106,46 +120,58 @@ class FrequencyFilterModel:
     
 ################################################################################
 
-def get_image_spectrum(image):
-    if len(image.shape) == 3:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+def transforme_de_fourier(image):
+    spectre_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    dft = np.fft.fft2(image)
+    dft = np.fft.fft2(spectre_gray)
     dft_shift = np.fft.fftshift(dft)
     
-    magnitude_spectrum = 20 * np.log(np.abs(dft_shift) + 1)  # Adding 1 to avoid log(0)
+    return dft_shift
 
-    spectrum_image = cv2.normalize(magnitude_spectrum, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+def appliquer_masque(dft_shift, masque):
+    return dft_shift * masque
+
+def calculer_spectre_magnitude(dft_shift_filtered):
+    magnitude_spectrum = np.abs(dft_shift_filtered)
+    magnitude_spectrum = np.log(magnitude_spectrum + 1)
+    magnitude_spectrum = np.uint8(255 * magnitude_spectrum / np.max(magnitude_spectrum))
     
-    #Create an RGB image by stacking the grayscale image across three channels
-    #rgb_spectrum_image = cv2.merge([spectrum_image, spectrum_image, spectrum_image])
+    return cv2.merge([magnitude_spectrum, magnitude_spectrum, magnitude_spectrum])
+
+def creer_masque_passe_bas(image, cutoff_freq):
+    rows, cols, _ = image.shape
+
+    masque = np.zeros((rows, cols), dtype=np.float32)
+    crow, ccol = rows // 2, cols // 2
     
-    return spectrum_image
+    for i in range(rows):
+        for j in range(cols):
+            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
+            if distance <= cutoff_freq:
+                masque[i, j] = 1 
+    
+    return masque
+
+def creer_masque_passe_haut(rows, cols, cutoff_freq):
+    masque = np.ones((rows, cols), dtype=np.float32)
+    crow, ccol = rows // 2, cols // 2
+    
+    for i in range(rows):
+        for j in range(cols):
+            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
+            if distance <= cutoff_freq:
+                masque[i, j] = 0
+    
+    return masque
 
 
-def visualize_spectrum(spectrum_image):
-    return cv2.merge([spectrum_image, spectrum_image, spectrum_image])
-
-
-
-def ideal_lowpass_filter(spectrum_image, cutoff_freq):
-    height, width = spectrum_image.shape[:2]
-
-    x = np.arange(-width // 2, width // 2)
-    y = np.arange(-height // 2, height // 2)
-    X, Y = np.meshgrid(x, y)
-
-    D = np.sqrt(X**2 + Y**2)
-    H = np.zeros((height, width))
-    H[D <= cutoff_freq] = 1
-
-    dft = np.fft.fft2(spectrum_image)
-    dft_shift = np.fft.fftshift(dft)
-    filtered_spectrum = dft_shift * H
-
-    filtered_image = np.fft.ifft2(np.fft.ifftshift(filtered_spectrum))
-
-    filtered_image_magnitude = np.abs(filtered_image)
-    filtered_image_normalized = cv2.normalize(filtered_image_magnitude, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-
-    return filtered_image_normalized
+def appliquer_filtre(dft_shift_filtered):
+    dft_filtered = np.fft.ifftshift(dft_shift_filtered)
+    image_filtree = np.fft.ifft2(dft_filtered)
+    image_filtree = np.abs(image_filtree)
+    
+    image_filtree = np.uint8(255 * (image_filtree / np.max(image_filtree))) #normalize
+    
+    return cv2.merge([image_filtree, image_filtree, image_filtree])
