@@ -126,35 +126,35 @@ class FrequencyFilterModel:
 def transforme_de_fourier(image):
     channels = cv2.split(image)
     
-    dft_channels = []
+    tf_channels = []
     for channel in channels:
-        dft = np.fft.fft2(channel)
-        dft_shift = np.fft.fftshift(dft)
-        dft_channels.append(dft_shift)
+        tf = np.fft.fft2(channel)
+        tf_shift = np.fft.fftshift(tf)
+        tf_channels.append(tf_shift)
     
-    return dft_channels
+    return tf_channels
 
-def apply_filtre(dft_shift_channels, filtre):
-    dft_shift_filtered = [dft_shift * filtre for dft_shift in dft_shift_channels]
-    return dft_shift_filtered
+def apply_filtre(tf_shift_channels, filtre):
+    tf_shift_filtered = [tf_shift * filtre for tf_shift in tf_shift_channels]
+    return tf_shift_filtered
 
-def calculer_spectre_magnitude(dft_shift_filtered_channels):
+def calculer_spectre_magnitude(tf_shift_filtered_channels):
     magnitude_spectra = []
 
-    for dft_shift_filtered in dft_shift_filtered_channels:
-        magnitude_spectrum = np.abs(dft_shift_filtered)
+    for tf_shift_filtered in tf_shift_filtered_channels:
+        magnitude_spectrum = np.abs(tf_shift_filtered)
         magnitude_spectrum = np.log(magnitude_spectrum + 1)
         magnitude_spectrum = np.uint8(255 * magnitude_spectrum / np.max(magnitude_spectrum))
         magnitude_spectra.append(magnitude_spectrum)
     
     return cv2.merge(magnitude_spectra)
 
-def transforme_de_fourier_inverse(dft_shift_filtered_channels):
+def transforme_de_fourier_inverse(tf_shift_filtered_channels):
     image_filtree_channels = []
     
-    for dft_shift_filtered in dft_shift_filtered_channels:
-        dft_filtered = np.fft.ifftshift(dft_shift_filtered)
-        image_filtree = np.fft.ifft2(dft_filtered)
+    for tf_shift_filtered in tf_shift_filtered_channels:
+        tf_filtered = np.fft.ifftshift(tf_shift_filtered)
+        image_filtree = np.fft.ifft2(tf_filtered)
         image_filtree = np.abs(image_filtree)
         image_filtree = np.uint8(255 * (image_filtree / np.max(image_filtree)))
         image_filtree_channels.append(image_filtree)
@@ -164,25 +164,28 @@ def transforme_de_fourier_inverse(dft_shift_filtered_channels):
 
 def butterworth_lowpass_filter(image, cutoff_freq, n_params_butter):
     rows, cols, _ = image.shape
+
     y, x = np.ogrid[:rows, :cols]
-    crow, ccol = rows // 2, cols // 2
-    distance = np.sqrt((y - crow) ** 2 + (x - ccol) ** 2)
+    center_row, center_col = rows // 2, cols // 2
+    distance = np.sqrt((y - center_row) ** 2 + (x - center_col) ** 2)
     
     return 1 / (1 + (distance / cutoff_freq) ** (2 * n_params_butter))
 
 def butterworth_highpass_filter(image, cutoff_freq, n_params_butter):
     rows, cols, _ = image.shape
+
     y, x = np.ogrid[:rows, :cols]
-    crow, ccol = rows // 2, cols // 2
-    distance = np.sqrt((y - crow) ** 2 + (x - ccol) ** 2)
+    center_row, center_col = rows // 2, cols // 2
+    distance = np.sqrt((y - center_row) ** 2 + (x - center_col) ** 2)
     
     return 1 / (1 + (cutoff_freq / np.maximum(distance, 1e-6)) ** (2 * n_params_butter))
 
 def ideal_lowpass_filter(image, cutoff_freq):
     rows, cols, _ = image.shape
+
     y, x = np.ogrid[:rows, :cols]
-    crow, ccol = rows // 2, cols // 2
-    distance = np.sqrt((y - crow) ** 2 + (x - ccol) ** 2)
+    center_row, center_col = rows // 2, cols // 2
+    distance = np.sqrt((y - center_row) ** 2 + (x - center_col) ** 2)
     
     return (distance <= cutoff_freq).astype(np.float32)
 
