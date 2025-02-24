@@ -149,32 +149,6 @@ def calculer_spectre_magnitude(dft_shift_filtered_channels):
     
     return cv2.merge(magnitude_spectra)
 
-def ideal_lowpass_filter(image, cutoff_freq):
-    rows, cols, _ = image.shape
-    filtre = np.zeros((rows, cols), dtype=np.float32)
-    crow, ccol = rows // 2, cols // 2
-    
-    for i in range(rows):
-        for j in range(cols):
-            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
-            if distance <= cutoff_freq:
-                filtre[i, j] = 1
-    
-    return filtre
-
-def ideal_highpass_filter(image, cutoff_freq):
-    rows, cols, _ = image.shape
-    filtre = np.ones((rows, cols), dtype=np.float32)
-    crow, ccol = rows // 2, cols // 2
-    
-    for i in range(rows):
-        for j in range(cols):
-            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
-            if distance <= cutoff_freq:
-                filtre[i, j] = 0
-    
-    return filtre
-
 def transforme_de_fourier_inverse(dft_shift_filtered_channels):
     image_filtree_channels = []
     
@@ -190,24 +164,27 @@ def transforme_de_fourier_inverse(dft_shift_filtered_channels):
 
 def butterworth_lowpass_filter(image, cutoff_freq, n_params_butter):
     rows, cols, _ = image.shape
-    filtre = np.zeros((rows, cols), dtype=np.float32)
+    y, x = np.ogrid[:rows, :cols]
     crow, ccol = rows // 2, cols // 2
+    distance = np.sqrt((y - crow) ** 2 + (x - ccol) ** 2)
     
-    for i in range(rows):
-        for j in range(cols):
-            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
-            filtre[i, j] = 1 / (1 + (distance / cutoff_freq)**(2 * n_params_butter))
-    
-    return filtre
+    return 1 / (1 + (distance / cutoff_freq) ** (2 * n_params_butter))
 
 def butterworth_highpass_filter(image, cutoff_freq, n_params_butter):
     rows, cols, _ = image.shape
-    filtre = np.ones((rows, cols), dtype=np.float32)
+    y, x = np.ogrid[:rows, :cols]
     crow, ccol = rows // 2, cols // 2
+    distance = np.sqrt((y - crow) ** 2 + (x - ccol) ** 2)
     
-    for i in range(rows):
-        for j in range(cols):
-            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
-            filtre[i, j] = 1 / (1 + (cutoff_freq / distance)**(2 * n_params_butter)) if distance != 0 else 1
+    return 1 / (1 + (cutoff_freq / np.maximum(distance, 1e-6)) ** (2 * n_params_butter))
+
+def ideal_lowpass_filter(image, cutoff_freq):
+    rows, cols, _ = image.shape
+    y, x = np.ogrid[:rows, :cols]
+    crow, ccol = rows // 2, cols // 2
+    distance = np.sqrt((y - crow) ** 2 + (x - ccol) ** 2)
     
-    return filtre
+    return (distance <= cutoff_freq).astype(np.float32)
+
+def ideal_highpass_filter(image, cutoff_freq):
+    return 1 - ideal_lowpass_filter(image, cutoff_freq)
