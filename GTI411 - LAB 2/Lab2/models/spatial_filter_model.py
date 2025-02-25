@@ -52,7 +52,21 @@ class SpatialFilterModel:
     
 
     def apply_median(self, image):
+        if self.kernel_size <= 0 or self.kernel_size % 2 == 0:
+            print("Kernel size is invalid, using default kernel size + 1.")
+            self.kernel_size += 1
+        
         median_image = cv2.medianBlur(image, self.kernel_size)
+        
+        if self.range_method == "Abs and normalize to 255":
+            median_image = cv2.convertScaleAbs(median_image)
+        elif self.range_method == "Abs and normalize 0 to 255":
+            median_image = cv2.normalize(np.abs(median_image), None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        elif self.range_method == "Normalize 0 to 255":
+            median_image = cv2.normalize(median_image, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        else:
+            median_image = np.clip(median_image, 0, 255).astype(np.uint8)
+        
         print("Median filter applied.")
         return median_image
     
