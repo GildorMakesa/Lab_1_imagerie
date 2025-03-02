@@ -29,6 +29,25 @@ class DrawShapeModel:
     def update_color(self, r, g, b):
         self.color = [r, g, b]
 
+    def draw_line_manual(self, start_point: tuple[int], end_point: tuple[int]):
+        x1, y1 = start_point
+        x2, y2 = end_point
+
+        # Assurez-vous que x1 <= x2
+        if x1 > x2:
+            x1, x2 = x2, x1
+            y1, y2 = y2, y1
+            
+        m = (y2 - y1) / (x2 - x1) if x2 != x1 else float('inf')  # S'assurer de ne pas diviser par zéro
+        y = y1
+        for x in range(x1, x2 + 1):
+            if m == float('inf'):
+                # Cas spécial où la ligne est verticale
+                self.image[int(y1), x] = self.color
+            else:
+                # Ici on arrondit les valeurs de y pour obtenir des indices entiers
+                self.image[int(round(y)), x] = self.color
+                y += m
 
 
     def draw_shape(self, start_point:tuple[int], end_point:tuple[int]):
@@ -50,7 +69,6 @@ class DrawShapeModel:
 
         # TODO 
         if self.shape_type == "Line":
-            # todo ...
-            pass
-
+            self.draw_line_manual(start_point, end_point)
+        
         return self.image
