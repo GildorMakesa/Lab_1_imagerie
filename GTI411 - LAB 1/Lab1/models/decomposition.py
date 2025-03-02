@@ -150,5 +150,3 @@ class Lab1DecompositionModel:
 
         else:
             raise NotImplementedError(f"{self.color_space} is not implemented")
-        
-    

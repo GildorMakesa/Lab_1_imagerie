@@ -197,8 +197,6 @@ class SpatialFilterWidget(QtWidgets.QWidget):
         except ValueError:
             self.kernel_size = 1  # Valeur par défaut si l'entrée est invalide
 
-
-
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         # Lab2_Window.setWindowTitle(_translate("Lab2_Window", "Lab2_Window"))

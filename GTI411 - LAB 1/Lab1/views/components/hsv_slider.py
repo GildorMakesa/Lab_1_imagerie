@@ -29,11 +29,11 @@ def create_hsv_palette(height: int, width: int, hsvcolor: list[float]):
 
 
 
-
 class HSVSlider(ColorSlider):
     ############################################################################################################
+    ############################################################################################################
     def init_ui(self, layout: QVBoxLayout, red: int, green: int, blue: int):
-        
+        # Convertir RGB vers CMYK
         h, s, v = color_conversion.rgb_2_hsv(red, green, blue)
 
         h_palette = create_hsv_palette(self.height, self.width, [360, 100, 100])
@@ -60,7 +60,14 @@ class HSVSlider(ColorSlider):
         h = self.h_slider.value()
         s = self.s_slider.value()
         v = self.v_slider.value()
+        # Récupérer les valeurs des sliders CMYK
+        h = self.h_slider.value()
+        s = self.s_slider.value()
+        v = self.v_slider.value()
 
+        # Convertir CMYK vers RGB
+        r, g, b = color_conversion.hsv_2_rgb(h, s, v)
+        return r, g, b
         # Convertir CMYK vers RGB
         r, g, b = color_conversion.hsv_2_rgb(h, s, v)
         return r, g, b
