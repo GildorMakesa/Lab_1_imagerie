@@ -13,10 +13,10 @@ Pour cela vous devrez remplir la fonction draw_shape qui se trouve dans models/d
 
 
 ### Résumé de la partie 1 
-- Ligne       🟡
-- Cercle      🟡
-- Rectangle   🟡 
-- Ellipse     🟡 
+- Ligne       🟢
+- Cercle      🟢
+- Rectangle   🟢 
+- Ellipse     🟢 
 
 
 
