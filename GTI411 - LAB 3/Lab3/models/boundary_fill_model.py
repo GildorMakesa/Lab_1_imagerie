@@ -25,8 +25,26 @@ class BoundaryFillModel:
     # TODO 
     # A implémenter manuellement
     def fill(self, x, y):
-        pass
-    
+        
+        """Implémente l'algorithme Boundary Fill en utilisant la récursion."""
+
+        # Vérifier si les coordonnées (x, y) sont dans l'image
+        if x < 0 or y < 0 or x >= self.image.shape[1] or y >= self.image.shape[0]:
+            return  # Si l'on dépasse les limites de l'image, on arrête
+        
+        # Vérifier si le pixel actuel est déjà de la couleur de la frontière ou de la couleur de remplissage
+        # Comparer pixel à pixel avec les couleurs de la frontière et de remplissage
+        if np.array_equal(self.image[y, x], self.boundary_color) or np.array_equal(self.image[y, x], self.fill_color):
+            return  # Arrêter la récursion si le pixel est une frontière ou déjà rempli
+        
+        # Remplir ce pixel avec la couleur de remplissage
+        self.image[y, x] = self.fill_color
+
+        # Appeler récursivement les pixels voisins (haut, bas, gauche, droite)
+        self.fill(x + 1, y)  # Droit
+        self.fill(x - 1, y)  # Gauche
+        self.fill(x, y + 1)  # Bas
+        self.fill(x, y - 1)  # Haut
 
     def set_fill_color(self, color):
         self.fill_color = np.array(color)
