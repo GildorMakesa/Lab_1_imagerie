@@ -25,8 +25,8 @@ Dans cette partie vous devrez implémenter les algorithmes de BoundaryFill et Fl
 Pour BoundaryFill vous pouvez choisir la couleur de remplissage et de bordure dans « Color type ». Pour FloodFill vous pouvez choisir la couleur de remplissage et les bornes haute et basse du filtre
 
 ### Résumé de la partie 2
-- BoundaryFill         🟡
-- FloodFill            🟡
+- BoundaryFill         🟢
+- FloodFill            🟢
 
 # Partie 3 : ZoomCam
 
