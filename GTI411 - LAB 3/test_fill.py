@@ -9,7 +9,11 @@ sys.setrecursionlimit(100000)
 boundary_color = np.array([255, 0, 0])  # La couleur de la frontière (par exemple, rouge)
 fill_color = np.array([0, 255, 255])  # La couleur de remplissage (par exemple, cyan)
 
-image = cv2.imread("test.png")  # Charger l'image depuis le fichier
+image = cv2.imread("C:/Users/Gildor/Desktop/test.png")  # Charger l'image depuis le fichier
+if image is None:
+    print("Erreur: L'image n'a pas pu être chargée. Vérifie le chemin du fichier.")
+    sys.exit()  # Quitter le programme si l'image n'a pas pu être chargée
+
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convertir l'image de BGR à RGB
 
 
@@ -38,13 +42,14 @@ def main():
     plt.subplot(1, 2, 1)
     plt.title("Forme initiale")
     plt.imshow(image)
+    plt.imshow(image)
     
     # Appeler la fonction de remplissage à partir d'un point à l'intérieur de la forme
     boundary_fill(15, 15)  # Choisir un point à l'intérieur de la forme pour commencer le remplissage
 
     # Afficher le résultat après le remplissage
     plt.subplot(1, 2, 2)
-    plt.title("Résultat attendu")
+    plt.title("Résultat Finale")
     plt.imshow(image)
     
     plt.show()
