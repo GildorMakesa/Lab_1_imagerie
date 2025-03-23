@@ -15,6 +15,21 @@ class LiveBackgroundProcessingApp(QMainWindow):
         self.is_capturing = False
         self.current_mode = "normal"  # Initial mode
         
+        # Load face detector
+        try:
+            # Try to load Haar cascade for face detection
+            face_cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+            self.face_cascade = cv2.CascadeClassifier(face_cascade_path)
+            
+            # Try to load eye cascade for better eye detection
+            eye_cascade_path = cv2.data.haarcascades + 'haarcascade_eye.xml'
+            self.eye_cascade = cv2.CascadeClassifier(eye_cascade_path)
+            
+            self.detection_enabled = True
+        except Exception as e:
+            print(f"Error loading cascades: {e}")
+            self.detection_enabled = False
+        
         # Set up the UI
         self.init_ui()
         
@@ -150,21 +165,66 @@ class LiveBackgroundProcessingApp(QMainWindow):
         pixmap = QPixmap.fromImage(q_img)
         self.video_label.setPixmap(pixmap.scaled(self.video_label.width(), self.video_label.height(), Qt.KeepAspectRatio))
     
-    def get_foreground_mask_edge_based(self, frame):
+    def enhance_face_regions(self, frame, mask):
         """
-        Creates a foreground mask using edge detection and flood fill method
+        Enhance the mask in face regions to ensure eyes and eyebrows are preserved
+        """
+        if not self.detection_enabled:
+            return mask
+            
+        # Create a copy of the mask
+        enhanced_mask = mask.copy()
+        
+        # Convert frame to grayscale for face detection
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        # Detect faces
+        faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+        
+        # For each face, enhance the eye region in the mask
+        for (x, y, w, h) in faces:
+            # Extract face region
+            face_roi = gray[y:y+h, x:x+w]
+            
+            # Create a face region with a margin
+            face_y1 = max(0, y - int(h * 0.1))  # Add margin above for eyebrows
+            face_y2 = min(frame.shape[0], y + h)
+            face_x1 = max(0, x - int(w * 0.05))  # Small margin on sides
+            face_x2 = min(frame.shape[1], x + w + int(w * 0.05))
+            
+            # Ensure the entire face region is included in the mask
+            enhanced_mask[face_y1:face_y2, face_x1:face_x2] = 255
+            
+            # Try to detect eyes specifically
+            eyes = self.eye_cascade.detectMultiScale(face_roi)
+            
+            # If eyes are detected, create special emphasis
+            for (ex, ey, ew, eh) in eyes:
+                # Convert eye coordinates relative to the whole frame
+                eye_x = x + ex
+                eye_y = y + ey
+                
+                # Ensure eye region and area above (eyebrows) are well preserved
+                eyebrow_y = max(0, eye_y - eh)
+                enhanced_mask[eyebrow_y:eye_y+eh, eye_x:eye_x+ew] = 255
+        
+        return enhanced_mask
+    
+    def get_foreground_mask_improved(self, frame):
+        """
+        Creates an improved foreground mask with better facial feature preservation
         """
         # Convert to grayscale
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Apply slight blur to reduce noise
-        blurred_gray = cv2.GaussianBlur(gray, (5, 5), 0)
+        # Apply slight blur to reduce noise while preserving edges
+        blurred_gray = cv2.GaussianBlur(gray, (3, 3), 0)
         
-        # Detect edges
-        edges = cv2.Canny(blurred_gray, 50, 150)
+        # Use more sensitive edge detection to catch facial features
+        edges = cv2.Canny(blurred_gray, 30, 100)  # Lower thresholds to detect more subtle edges
         
-        # Dilate edges to connect gaps
-        dilated_edges = cv2.dilate(edges, np.ones((5, 5), np.uint8), iterations=3)
+        # Dilate edges to connect gaps but not too much to preserve details
+        dilated_edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=2)
         
         # Create a mask using flood fill to get the full silhouette
         h, w = dilated_edges.shape
@@ -172,22 +232,21 @@ class LiveBackgroundProcessingApp(QMainWindow):
         mask_fill = np.zeros((h+2, w+2), np.uint8)
         cv2.floodFill(mask, mask_fill, (0, 0), 255)
         
-        # Invert the mask (0 for foreground, 255 for background)
+        # Invert the mask (255 for foreground, 0 for background)
         mask_inv = cv2.bitwise_not(mask)
         
-        # Apply morphological operations to clean up the mask
-        kernel = np.ones((5, 5), np.uint8)
-        mask_inv = cv2.morphologyEx(mask_inv, cv2.MORPH_OPEN, kernel, iterations=1)
-        mask_inv = cv2.morphologyEx(mask_inv, cv2.MORPH_CLOSE, kernel, iterations=2)
+        # Enhance face regions to ensure eyes and eyebrows are preserved
+        enhanced_mask = self.enhance_face_regions(frame, mask_inv)
         
-        return mask_inv
+        # Apply morphological operations to clean up the mask while preserving details
+        kernel = np.ones((3, 3), np.uint8)
+        final_mask = cv2.morphologyEx(enhanced_mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+        
+        return final_mask
     
     def subtract_background_live(self, frame):
-        # Get foreground mask
-        fg_mask = self.get_foreground_mask_edge_based(frame)
-        
-        # Convert to 3-channel for display
-        mask_3ch = cv2.cvtColor(fg_mask, cv2.COLOR_GRAY2BGR)
+        # Get improved foreground mask
+        fg_mask = self.get_foreground_mask_improved(frame)
         
         # Create a white background
         white_bg = np.ones_like(frame) * 255
@@ -205,8 +264,8 @@ class LiveBackgroundProcessingApp(QMainWindow):
         return result
     
     def blur_background_live(self, frame):
-        # Get foreground mask using edge detection
-        fg_mask = self.get_foreground_mask_edge_based(frame)
+        # Get improved foreground mask
+        fg_mask = self.get_foreground_mask_improved(frame)
         
         # Create a heavily blurred version of the entire frame
         blurred_frame = cv2.GaussianBlur(frame, (35, 35), 0)
@@ -224,8 +283,8 @@ class LiveBackgroundProcessingApp(QMainWindow):
         return result
     
     def replace_background_live(self, frame):
-        # Get foreground mask using edge detection
-        fg_mask = self.get_foreground_mask_edge_based(frame)
+        # Get improved foreground mask
+        fg_mask = self.get_foreground_mask_improved(frame)
         
         # Check if we have a custom background
         if self.custom_background is None:
