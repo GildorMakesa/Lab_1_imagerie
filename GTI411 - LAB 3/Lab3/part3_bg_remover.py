@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QVBo
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 
-class LiveBackgroundProcessingApp(QMainWindow):
+class BackgroundRemover(QMainWindow):
     def __init__(self):
         super().__init__()
         
@@ -64,23 +64,18 @@ class LiveBackgroundProcessingApp(QMainWindow):
         self.timer.timeout.connect(self.update_frame)
         
     def setup_camera(self):
-        self.cap = cv2.VideoCapture(4)
+        self.cap = cv2.VideoCapture(4) #######################TO BE CHANGED IF THE CAMERA FEED IS NOT WORKING
         
         self.is_capturing = True
         self.timer.start(30)
     
     def load_custom_background(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Custom Background Image", "", "Image Files (*.png *.jpg *.jpeg *.bmp)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Custom Background Image", "", "Image Files (*.png *.jpg *.jpeg)")
+
         if file_path:
-            try:
-                self.custom_background = cv2.imread(file_path)
-                if self.custom_background is None:
-                    self.status_label.setText("Error: Could not load custom background")
-                else:
-                    self.status_label.setText(f"Custom background loaded from: {file_path}")
-            except Exception as e:
-                self.status_label.setText(f"Error: {str(e)}")
-    
+            self.custom_background = cv2.imread(file_path)
+            self.status_label.setText(f"Custom background: {file_path}")
+
     def set_mode(self, mode):
         self.current_mode = mode
         self.status_label.setText(f"Mode changed to: {mode}")
@@ -94,16 +89,16 @@ class LiveBackgroundProcessingApp(QMainWindow):
             self.status_label.setText("Error: Could not read frame from camera")
             return
         
-        frame = cv2.flip(frame, 1)
+        frame = cv2.flip(frame, 1) #More normal looking camera feed
         
         if self.current_mode == "normal":
             processed_frame = frame
         elif self.current_mode == "subtract":
-            processed_frame = self.subtract_background_live(frame)
+            processed_frame = self.subtract_background(frame)
         elif self.current_mode == "blur":
-            processed_frame = self.blur_background_live(frame)
+            processed_frame = self.blur_background(frame)
         elif self.current_mode == "replace":
-            processed_frame = self.replace_background_live(frame)
+            processed_frame = self.replace_background(frame)
         else:
             processed_frame = frame
         
@@ -137,7 +132,7 @@ class LiveBackgroundProcessingApp(QMainWindow):
         
         return mask_inv
     
-    def subtract_background_live(self, frame):
+    def subtract_background(self, frame):
         fg_mask = self.get_foreground_mask_edge_based(frame)
         
         mask_3ch = cv2.cvtColor(fg_mask, cv2.COLOR_GRAY2BGR)
@@ -152,7 +147,7 @@ class LiveBackgroundProcessingApp(QMainWindow):
         
         return result
     
-    def blur_background_live(self, frame):
+    def blur_background(self, frame):
         fg_mask = self.get_foreground_mask_edge_based(frame)
         
         blurred_frame = cv2.GaussianBlur(frame, (35, 35), 0)
@@ -165,7 +160,7 @@ class LiveBackgroundProcessingApp(QMainWindow):
         
         return result
     
-    def replace_background_live(self, frame):
+    def replace_background(self, frame):
         fg_mask = self.get_foreground_mask_edge_based(frame)
         custom_bg = cv2.resize(self.custom_background, (frame.shape[1], frame.shape[0]))
         
@@ -186,6 +181,6 @@ class LiveBackgroundProcessingApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = LiveBackgroundProcessingApp()
+    window = BackgroundRemover()
     window.show()
     sys.exit(app.exec_())
