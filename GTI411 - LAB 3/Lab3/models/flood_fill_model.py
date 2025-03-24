@@ -36,12 +36,6 @@ class FloodFillModel:
         return image
 
     
-    # TODO
-    # Hint: Vous pouvez utiliser la fonction d'OpenCV
-    #def fill_temp(self, image, x, y):
-     #   return image
-
-
     def set_fill_color(self, color):
         self.fill_color = color
 
