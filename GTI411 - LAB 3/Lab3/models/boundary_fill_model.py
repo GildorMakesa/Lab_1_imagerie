@@ -22,8 +22,7 @@ class BoundaryFillModel:
         return self.image
     
     
-    # TODO 
-    # A implémenter manuellement
+    
     def fill(self, x, y):
         
         """Implémente l'algorithme Boundary Fill en utilisant la récursion."""
