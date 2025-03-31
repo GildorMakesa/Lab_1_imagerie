@@ -65,14 +65,36 @@ class InterpolationModel:
         for x, y in self.points:
             cv2.circle(self.canvas, (round(x), round(y)), self.point_radius, (255, 0, 0), -1)
 
-    # TODO
+    
     def draw_linear(self):
-        pass
+        if len(self.points) < 2:
+            return  # Il faut au moins 2 points pour tracer une ligne
+
+        for i in range(len(self.points) - 1):
+            pt1 = tuple(map(round, self.points[i]))
+            pt2 = tuple(map(round, self.points[i + 1]))
+            cv2.line(self.canvas, pt1, pt2, (0, 255, 0), thickness=2)  # Vert
 
 
-    # TODO
+
     def draw_bezier(self):
-        pass
+        
+        if len(self.points) < 2:
+            return  # Il faut au moins 2 points
+
+        def bezier_point(t, points):
+            """Calcule un point de Bézier en utilisant l'algorithme de De Casteljau."""
+            while len(points) > 1:
+                points = [(1 - t) * np.array(p1) + t * np.array(p2) for p1, p2 in zip(points[:-1], points[1:])]
+            return tuple(map(int, points[0]))  # Convertit le dernier point en coordonnées entières
+
+        curve_resolution = 100  # Plus la valeur est élevée, plus la courbe est lisse
+        bezier_curve = [bezier_point(t, self.points) for t in np.linspace(0, 1, curve_resolution)]
+
+        # Dessiner la courbe de Bézier
+        for i in range(len(bezier_curve) - 1):
+            cv2.line(self.canvas, bezier_curve[i], bezier_curve[i + 1], (0, 255, 255), thickness=2)  # Jaune
+
 
         # return points
 
