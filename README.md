@@ -7,10 +7,10 @@ L’interface vous permet de cliquer (gauche) sur le canvas (image en noir) pour
 
 
 ### Résumé de la partie 1 
-- Droites Linéaires 🟡      
+- Droites Linéaires 🟢     
 - Courbes de Bézir
-  - linénaire       🟡
-  - quadratique     🟡
+  - linénaire       🟢
+  - quadratique     🟢
   - cubique         🟡
 - Courbes Hermite   🟡 
 - Courbes B-Spline  🟡 
