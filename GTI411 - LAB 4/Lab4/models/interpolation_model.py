@@ -76,36 +76,127 @@ class InterpolationModel:
             cv2.line(self.canvas, pt1, pt2, (0, 255, 0), thickness=2)  # Vert
 
 
-
     def draw_bezier(self):
-        
         if len(self.points) < 2:
-            return  # Il faut au moins 2 points
+            return  # Pas assez de points pour une courbe
 
-        def bezier_point(t, points):
-            """Calcule un point de Bézier en utilisant l'algorithme de De Casteljau."""
-            while len(points) > 1:
-                points = [(1 - t) * np.array(p1) + t * np.array(p2) for p1, p2 in zip(points[:-1], points[1:])]
-            return tuple(map(int, points[0]))  # Convertit le dernier point en coordonnées entières
+        def linear_bezier(p0, p1, t):
+            x = (1 - t) * p0[0] + t * p1[0]
+            y = (1 - t) * p0[1] + t * p1[1]
+            return int(x), int(y)
 
-        curve_resolution = 100  # Plus la valeur est élevée, plus la courbe est lisse
-        bezier_curve = [bezier_point(t, self.points) for t in np.linspace(0, 1, curve_resolution)]
+        def quadratic_bezier(p0, p1, p2, t):
+            x = (1 - t)**2 * p0[0] + 2 * (1 - t) * t * p1[0] + t**2 * p2[0]
+            y = (1 - t)**2 * p0[1] + 2 * (1 - t) * t * p1[1] + t**2 * p2[1]
+            return int(x), int(y)
 
-        # Dessiner la courbe de Bézier
-        for i in range(len(bezier_curve) - 1):
-            cv2.line(self.canvas, bezier_curve[i], bezier_curve[i + 1], (0, 255, 255), thickness=2)  # Jaune
+        def cubic_bezier(p0, p1, p2, p3, t):
+            x = ((1 - t)**3 * p0[0] +
+                3 * (1 - t)**2 * t * p1[0] +
+                3 * (1 - t) * t**2 * p2[0] +
+                t**3 * p3[0])
+            y = ((1 - t)**3 * p0[1] +
+                3 * (1 - t)**2 * t * p1[1] +
+                3 * (1 - t) * t**2 * p2[1] +
+                t**3 * p3[1])
+            return int(x), int(y)
 
+        switch = []
+        for t in [i / 100 for i in range(101)]:
+            if len(self.points) == 2:
+                pt = linear_bezier(self.points[0], self.points[1], t)
+            elif len(self.points) == 3:
+                pt = quadratic_bezier(self.points[0], self.points[1], self.points[2], t)
+            elif len(self.points) == 4:
+                pt = cubic_bezier(self.points[0], self.points[1], self.points[2], self.points[3], t)
+            else:
+                break  # Optionnel : gérer +4 points avec De Casteljau ou ignorer
+            switch.append(pt)
+
+        for i in range(len(switch) - 1):
+            cv2.line(self.canvas, switch[i], switch[i + 1], (0, 255, 255), 2)  # Jaune
 
         # return points
 
 
-    # TODO
     def draw_hermite(self):
-        pass
+        if len(self.points) < 4 or len(self.points) % 2 != 0:
+            return  # Il faut un nombre pair de points (minimum 4)
 
-    # TODO
+        # Regrouper les points deux par deux pour former des vecteurs
+        vectors = []
+        centers = []
+        for i in range(0, len(self.points) - 1, 2):
+            p1 = np.array(self.points[i])
+            p2 = np.array(self.points[i + 1])
+            center = (p1 + p2) / 2
+            tangent = p2 - p1
+            centers.append(center)
+            vectors.append(tangent)
+
+            # Dessiner les vecteurs pour la visualisation
+            cv2.line(self.canvas, tuple(p1.astype(int)), tuple(p2.astype(int)), (0, 255, 0), 1)
+            cv2.circle(self.canvas, tuple(center.astype(int)), 4, (255, 255, 0), -1)
+
+        # Dessiner les courbes Hermite entre les centres
+        for i in range(len(centers) - 1):
+            P0 = centers[i]
+            P1 = centers[i + 1]
+            T0 = vectors[i] * 0.5  # On peut ajuster l'influence avec ce facteur
+            T1 = vectors[i + 1] * 0.5
+
+            previous = None
+            for t in np.linspace(0, 1, 100):
+                h00 = 2 * t**3 - 3 * t**2 + 1
+                h10 = t**3 - 2 * t**2 + t
+                h01 = -2 * t**3 + 3 * t**2
+                h11 = t**3 - t**2
+
+                point = h00 * P0 + h10 * T0 + h01 * P1 + h11 * T1
+                point = tuple(point.astype(int))
+
+                if previous:
+                    cv2.line(self.canvas, previous, point, (255, 0, 255), 2)  # Magenta
+                previous = point
+
+
     def draw_spline(self):
-        pass
+        if len(self.points) < 4:
+            return  # Il faut au moins 4 points pour une Catmull-Rom spline
+
+        def catmull_rom_point(t, p0, p1, p2, p3):
+            # Calcul de t² et t³
+            t2 = t * t
+            t3 = t2 * t
+
+            # Formule Catmull-Rom (avec tension standard de 0.5)
+            x = 0.5 * ((2 * p1[0]) +
+                    (-p0[0] + p2[0]) * t +
+                    (2*p0[0] - 5*p1[0] + 4*p2[0] - p3[0]) * t2 +
+                    (-p0[0] + 3*p1[0] - 3*p2[0] + p3[0]) * t3)
+
+            y = 0.5 * ((2 * p1[1]) +
+                    (-p0[1] + p2[1]) * t +
+                    (2*p0[1] - 5*p1[1] + 4*p2[1] - p3[1]) * t2 +
+                    (-p0[1] + 3*p1[1] - 3*p2[1] + p3[1]) * t3)
+
+            return (int(x), int(y))
+
+        # Parcours les segments composés de 4 points consécutifs,
+        # la courbe interpole entre p1 et p2 pour chaque segment.
+        for i in range(len(self.points) - 3):
+            p0 = self.points[i]
+            p1 = self.points[i + 1]
+            p2 = self.points[i + 2]
+            p3 = self.points[i + 3]
+
+            prev = catmull_rom_point(0, p0, p1, p2, p3)
+            # Génère des points entre t=0 et t=1
+            for t in np.linspace(0, 1, 100):
+                pt = catmull_rom_point(t, p0, p1, p2, p3)
+                cv2.line(self.canvas, prev, pt, (0, 255, 0), 2)  # Couleur verte (modifiable)
+                prev = pt
+
         
     def get_canvas(self):
         self.draw()
